@@ -1,0 +1,17 @@
+{
+  "name": "bot-btc-poloniex",
+  "version": "0.0.1",
+  "description": "Bot to trade on Poloniex platform",
+  "author": "Rafael Costa<rafaelcmrj@gmail.com>",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rafaelcmrj/bot-btc-poloniex"
+  },
+  "dependencies": {
+    "autobahn": "^0.10.1"
+  },
+  "license": "MIT"
+}
