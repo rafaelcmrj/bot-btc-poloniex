@@ -15,17 +15,7 @@ connection.onopen = function(session) {
 		console.log(args);
 	}
 
-	function tickerEvent(args, kwargs) {
-		console.log(args);
-	}
-
-	function trollboxEvent(args, kwargs) {
-		console.log(args);
-	}
-
-	session.subscribe('BTC_XMR', marketEvent);
-	session.subscribe('ticker', tickerEvent);
-	session.subscribe('trollbox', trollboxEvent);
+	session.subscribe('BTC_ETH', marketEvent);
 
 };
 
