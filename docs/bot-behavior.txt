@@ -6,3 +6,4 @@
 5. if price increases more than 16%, successively, buy and set price = last bid
 6. each order can’t be more than 5% of total
 7.
+8. 
