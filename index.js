@@ -1,28 +1,54 @@
+/**
+ * Importing Modules
+ */
 var autobahn = require('autobahn');
+var request = require('request');
 
-var wsuri = 'wss://api.poloniex.com';
+/**
+ * Importing file dependencies
+ */
+var config = require('./config.js');
 
+/**
+ * Connection attributes
+ */
 var connection = new autobahn.Connection({
-
-	url: wsuri,
-	realm: 'realm1'
-
+  url: config.POLONIEX_WEBSERVICE_URL,
+  realm: "realm1"
 });
 
 connection.onopen = function(session) {
 
-	function marketEvent(args, kwargs) {
+	console.log('on open');
+
+	callPoloniexAPI('returnOrderBook', function(error, response, body) {
+		console.log(body);
+	});
+	//
+	
+	/*session.subscribe('BTC_ETH', function(args, kwargs){
 		console.log(args);
-	}
+		console.log('*******');
+	});*/
 
-	session.subscribe('BTC_ETH', marketEvent);
+}
 
-};
+function callPoloniexAPI(command, callback) {
+	var options = {
+		method: 'GET',
+		url: config.POLONIEX_PUBLIC_API_URL,
+		qs: {
+			command: command,
+			currencyPair: 'BTC_ETH'
+		},
+		json: true
+	};
 
-connection.onclose = function() {
+	request(options, callback);
+}
 
-	console.log('Connection closed');
-
-};
-
+connection.onclose = function () {
+  console.log("Websocket connection closed");
+}
+		       
 connection.open();
