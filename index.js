@@ -52,3 +52,9 @@ connection.onclose = function () {
 }
 		       
 connection.open();
+
+
+var OrderBook = new autobahn.orderBook ({
+	url: POLONIEX_RETURN_ORDER_BOOK,
+	realm: "realm1"
+});
