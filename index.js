@@ -53,17 +53,18 @@ connection.onclose = function () {
 		       
 connection.open();
 
-//Returning the order book returning when the market is frozen
+//Returning the order book returning when the market is frozen, as a test
+
 var OrderBook = new autobahn.orderBook ({
 	url: POLONIEX_RETURN_ORDER_BOOK,
 	realm: "realm1"
 });
 
-orderBook.onopen = function(orderBook) {
+orderBook.onopen = function(orderBookFrozen) {
 
 	console.log('on Order Book');
 
-	callPoloniexAPI('returnOrderBook', function(error, response, body) {
+	callPoloniexAPI('returnOrderBookFrozen', function(error, response, body) {
 		console.log(body);
 	});
 
