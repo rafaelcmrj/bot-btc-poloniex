@@ -12,7 +12,7 @@ var config = require('./config.js');
 /**
  * Connection attributes
  */
-var connection = new autobahn.Connection({
+var Connection = new autobahn.Connection({
   url: config.POLONIEX_WEBSERVICE_URL,
   realm: "realm1"
 });
