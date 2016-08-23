@@ -11,7 +11,8 @@
     "url": "https://github.com/rafaelcmrj/bot-btc-poloniex"
   },
   "dependencies": {
-    "autobahn": "^0.10.1"
+    "autobahn": "^0.10.1",
+    "request": "^2.74.0"
   },
   "license": "MIT"
 }
