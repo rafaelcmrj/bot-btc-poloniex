@@ -2,7 +2,8 @@
   "name": "bot-btc-poloniex",
   "version": "0.0.1",
   "description": "Bot to trade on Poloniex platform",
-  "author": "Rafael Costa<rafaelcmrj@gmail.com>",
+  "author": "Rafael Costa<rafaelcmrj@gmail.com>", 
+  "co-author": "Paulo Alexandre<furtuna.alexandre@gmail.com>",
   "scripts": {
     "start": "node index.js"
   },

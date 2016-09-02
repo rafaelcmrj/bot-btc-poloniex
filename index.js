@@ -17,11 +17,16 @@ var Connection = new autobahn.Connection({
   realm: "realm1"
 });
 
+
 connection.onopen = function(session) {
 
 	console.log('on open');
 
 	callPoloniexAPI('returnOrderBook', function(error, response, body) {
+		console.log(body);
+	});
+
+	callPoloniexAPI('returnBalances', function(error, response, body) {
 		console.log(body);
 	});
 	//
@@ -52,20 +57,3 @@ connection.onclose = function () {
 }
 		       
 connection.open();
-
-//Returning the order book returning when the market is frozen, as a test
-
-var OrderBook = new autobahn.orderBook ({
-	url: POLONIEX_RETURN_ORDER_BOOK,
-	realm: "realm1"
-});
-
-orderBook.onopen = function(orderBookFrozen) {
-
-	console.log('on Order Book');
-
-	callPoloniexAPI('returnOrderBookFrozen', function(error, response, body) {
-		console.log(body);
-	});
-
-}
