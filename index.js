@@ -11,7 +11,7 @@ var config = require('./config.js');
 var params = require('./params.js');
 
 /** Trade values */
-var lastPrice, higherPrice24h, lowerPrice24h;
+var lastPrice;
 
 /**
  * Connection attributes
