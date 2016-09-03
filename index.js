@@ -8,11 +8,15 @@ var request = require('request');
  * Importing file dependencies
  */
 var config = require('./config.js');
+var params = require('./params.js');
+
+/** Trade values */
+var lastPrice, higherPrice24h, lowerPrice24h;
 
 /**
  * Connection attributes
  */
-var Connection = new autobahn.Connection({
+var connection = new autobahn.Connection({
   url: config.POLONIEX_WEBSERVICE_URL,
   realm: "realm1"
 });
@@ -20,22 +24,18 @@ var Connection = new autobahn.Connection({
 
 connection.onopen = function(session) {
 
-	console.log('on open');
-
-	callPoloniexAPI('returnOrderBook', function(error, response, body) {
-		console.log(body);
+	session.subscribe(config.CURRENCY, function(args, kwargs) {
+		for (var i in args) {
+			var action = args[i];
+			if (action.type == 'newTrade') {
+				lastPrice = action.data.rate;
+			}
+		}
 	});
-
-	callPoloniexAPI('returnBalances', function(error, response, body) {
-		console.log(body);
-	});
-	//
 	
-	/*session.subscribe('BTC_ETH', function(args, kwargs){
-		console.log(args);
-		console.log('*******');
-	});*/
+	/*callPoloniexAPI('returnOrderBook', function(error, response, body) {
 
+	});*/
 }
 
 function callPoloniexAPI(command, callback) {
@@ -44,7 +44,7 @@ function callPoloniexAPI(command, callback) {
 		url: config.POLONIEX_PUBLIC_API_URL,
 		qs: {
 			command: command,
-			currencyPair: 'BTC_ETH'
+			currencyPair: config.CURRENCY
 		},
 		json: true
 	};
