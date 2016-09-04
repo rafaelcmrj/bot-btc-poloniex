@@ -11,7 +11,7 @@ var config = require('./config.js');
 var params = require('./params.js');
 
 /** Trade values */
-var lastPrice;
+var last, lowestAsk, highestBid, percentChange, baseVolume, quoteVolume, isFrozen, high24hr, low24hr;
 
 /**
  * Connection attributes
@@ -24,13 +24,20 @@ var connection = new autobahn.Connection({
 
 connection.onopen = function(session) {
 
-	session.subscribe(config.CURRENCY, function(args, kwargs) {
-		for (var i in args) {
-			var action = args[i];
-			if (action.type == 'newTrade') {
-				lastPrice = action.data.rate;
-			}
+	session.subscribe('ticker', function(args, kwargs) {
+
+		if (args[0] == config.CURRENCY) {
+			last = args[1];
+			lowestAsk = args[2];
+			highestBid = args[3];
+			percentChange = args[4] * 100;
+			baseVolume = args[5];
+			quoteVolume = args[6];
+			isFrozen = args[7];
+			high24hr = args[8];
+			low24hr = args[9];
 		}
+		
 	});
 	
 	/*callPoloniexAPI('returnOrderBook', function(error, response, body) {
