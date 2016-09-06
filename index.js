@@ -62,9 +62,9 @@ Bot.prototype.sell = function() {
 	console.log('sold at:', last);
 
 	console.log('*** LAST ORDER ***');
-	console.log('BOUGHT AT:', order.price);
+	console.log('BOUGHT AT:', this.order.price);
 	console.log('SOLD AT:', last);
-	console.log('PROFIT:', (last * 100 / order.price - 100) + '%');
+	console.log('PROFIT:', (last * 100 / this.order.price - 100) + '%');
 	console.log('*** END SUMMARY ***');
 
 	this.order = null;
