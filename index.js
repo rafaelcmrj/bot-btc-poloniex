@@ -43,11 +43,12 @@ function onTickerUpdate() {
 	if (!lastBasePrice) {
 		lastBasePrice = last;
 		priceToBuy = lastBasePrice * ((100 - params.MARGIN_TO_BUY) / 100);
+		securityMargin = lastBasePrice * ((100 - params.SECURITY_MARGIN) / 100);
 		
 		console.log('lastBasePrice:', lastBasePrice, ' / priceToBuy:', priceToBuy);
 	}
 
-	if (!order && last <= priceToBuy) {
+	if (!order && last <= priceToBuy && last > securityMargin) {
 
 		buy();
 
