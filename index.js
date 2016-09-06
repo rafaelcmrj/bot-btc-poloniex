@@ -20,6 +20,14 @@ var Bot = function() {
 	this.priceToSell = null;
 	this.securityMargin = null;
 
+	this.setCurrencyPair();
+
+};
+
+Bot.prototype.setCurrencyPair = function() {
+	if (process.argv[2]) {
+		config.CURRENCY = process.argv[2]; 
+	}
 };
 
 Bot.prototype.tickerUpdate = function() {
@@ -78,6 +86,7 @@ var bot = new Bot();
 
 poloniex.push(function(session) {
 	session.subscribe('ticker', function(data){
+		console.log(config.CURRENCY);
 		if (data[0] == config.CURRENCY) {
 			last = data[1];
 			lowestAsk = data[2];
