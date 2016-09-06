@@ -1,8 +1,7 @@
 /**
  * Importing Modules
  */
-var autobahn = require('autobahn');
-var request = require('request');
+var poloniex = require('plnx');
 
 /**
  * Importing file dependencies
@@ -13,54 +12,44 @@ var params = require('./params.js');
 /** Trade values */
 var last, lowestAsk, highestBid, percentChange, baseVolume, quoteVolume, isFrozen, high24hr, low24hr;
 
-/**
- * Connection attributes
- */
-var connection = new autobahn.Connection({
-  url: config.POLONIEX_WEBSERVICE_URL,
-  realm: "realm1"
+/** Order values */
+var order = null;
+
+/** Start trading (!!!) */
+poloniex.push(function(session) {
+	session.subscribe('ticker', function(data){
+		if (data[0] == config.CURRENCY) {
+			last = data[1];
+			lowestAsk = data[2];
+			highestBid = data[3];
+			percentChange = data[4] * 100;
+			baseVolume = data[5];
+			quoteVolume = data[6];
+			isFrozen = data[7];
+			high24hr = data[8];
+			low24hr = data[9];
+
+			onTickerUpdate();
+		}
+	});
 });
 
+function onTickerUpdate() {
 
-connection.onopen = function(session) {
+	console.log('ticker update', last, percentChange + '%');
 
-	session.subscribe('ticker', function(args, kwargs) {
+	if (order) {
+		console.log('price variation', last * order.price / 100);
+	}
 
-		if (args[0] == config.CURRENCY) {
-			last = args[1];
-			lowestAsk = args[2];
-			highestBid = args[3];
-			percentChange = args[4] * 100;
-			baseVolume = args[5];
-			quoteVolume = args[6];
-			isFrozen = args[7];
-			high24hr = args[8];
-			low24hr = args[9];
+	if (!order && percentChange > 0) {
+		console.log('bought at:', last);
+		order = {
+			price: last,
+			amount: 1000
 		}
-		
-	});
-	
-	/*callPoloniexAPI('returnOrderBook', function(error, response, body) {
-
-	});*/
+	} else if (order && last > order.price * 1.025) {
+		console.log('sold at:', last);
+		order = null;
+	}
 }
-
-function callPoloniexAPI(command, callback) {
-	var options = {
-		method: 'GET',
-		url: config.POLONIEX_PUBLIC_API_URL,
-		qs: {
-			command: command,
-			currencyPair: config.CURRENCY
-		},
-		json: true
-	};
-
-	request(options, callback);
-}
-
-connection.onclose = function () {
-  console.log("Websocket connection closed");
-}
-		       
-connection.open();
