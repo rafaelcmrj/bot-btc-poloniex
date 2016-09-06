@@ -1,15 +1,19 @@
 {
-  "name": "bot-btc-poloniex",
+  "name": "Poloniex Bot",
   "version": "0.0.1",
-  "description": "Bot to trade on Poloniex platform",
-  "author": "Rafael Costa<rafaelcmrj@gmail.com>",
-  "co-author": "Paulo Alexandre<furtuna.alexandre@gmail.com>",
+  "description": "Trading bot to Poloniex exchange",
+  "author": "Rafael Costa <rafaelcmrj@gmail.com> (https://github.com/rafaelcmrj)",
+  "contributors": ["Paulo Alexandre <furtuna.alexandre@gmail.com> (https://github.com/gigaPaul)"],
   "scripts": {
     "start": "node index.js"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/rafaelcmrj/bot-btc-poloniex"
+  },
+  "bugs": {
+    "url": "https://github.com/rafaelcmrj/bot-btc-poloniex/issues",
+    "email": "rafaelcmrj@gmail.com"
   },
   "dependencies": {
     "autobahn": "^0.10.1",
