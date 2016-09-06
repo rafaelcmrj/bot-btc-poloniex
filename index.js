@@ -12,14 +12,64 @@ var params = require('./params.js');
 /** Trade values */
 var last, lowestAsk, highestBid, percentChange, baseVolume, quoteVolume, isFrozen, high24hr, low24hr;
 
-/** Order values */
-var order = null;
-var lastBasePrice = null;
-var priceToBuy = null;
-var priceToSell = null;
-var securityMargin = null;
+var Bot = function() {
+
+	this.order = null;
+	this.lastBasePrice = null;
+	this.priceToBuy = null;
+	this.priceToSell = null;
+	this.securityMargin = null;
+
+};
+
+Bot.prototype.tickerUpdate = function() {
+	if (!this.lastBasePrice) {
+		this.lastBasePrice = last;
+		this.priceToBuy = this.lastBasePrice * ((100 - params.MARGIN_TO_BUY) / 100);
+		this.securityMargin = this.lastBasePrice * ((100 - params.SECURITY_MARGIN) / 100);
+		
+		console.log('lastBasePrice:', this.lastBasePrice, ' / priceToBuy:', this.priceToBuy);
+	}
+
+	if (!this.order && last <= this.priceToBuy && last > this.securityMargin) {
+
+		this.buy();
+
+	} else if (order && last >= priceToSell) {
+
+		this.sell();
+
+	} else if (this.order && last <= this.securityMargin) {
+
+		console.log('currency decreased a lot. gonna sell for security margin');
+
+		this.sell();
+	}
+};
+
+Bot.prototype.buy = function() {
+	console.log('bought at:', last);
+
+	this.order = { price: last };
+	this.priceToSell = this.order.price * ((100 + params.MARGIN_TO_SELL) / 100);
+	this.securityMargin = this.lastBasePrice * ((100 - params.SECURITY_MARGIN) / 100);
+
+	console.log('priceToSell:', this.priceToSell, ' / securityMargin:', this.securityMargin);
+};
+
+Bot.prototype.sell = function() {
+
+	console.log('sold at:', last);
+
+	this.order = null;
+	this.lastBasePrice = null;
+	this.priceToBuy = null;
+	this.priceToSell = null;
+};
 
 /** Start trading (!!!) */
+var bot = new Bot();
+
 poloniex.push(function(session) {
 	session.subscribe('ticker', function(data){
 		if (data[0] == config.CURRENCY) {
@@ -33,51 +83,7 @@ poloniex.push(function(session) {
 			high24hr = data[8];
 			low24hr = data[9];
 
-			onTickerUpdate();
+			bot.tickerUpdate();
 		}
 	});
 });
-
-function onTickerUpdate() {
-
-	if (!lastBasePrice) {
-		lastBasePrice = last;
-		priceToBuy = lastBasePrice * ((100 - params.MARGIN_TO_BUY) / 100);
-		securityMargin = lastBasePrice * ((100 - params.SECURITY_MARGIN) / 100);
-		
-		console.log('lastBasePrice:', lastBasePrice, ' / priceToBuy:', priceToBuy);
-	}
-
-	if (!order && last <= priceToBuy && last > securityMargin) {
-
-		buy();
-
-	} else if (order && last >= priceToSell) {
-
-		sell();
-
-	} else if (order && last <= securityMargin) {
-
-		console.log('currency decreased a lot. gonna sell for security margin');
-
-		sell();
-	}
-}
-
-function sell() {
-	console.log('sold at:', last);
-	order = null;
-	lastBasePrice = null;
-	priceToBuy = null;
-	priceToSell = null;
-}
-
-function buy() {
-	console.log('bought at:', last);
-	order = { price: last };
-
-	priceToSell = order.price * ((100 + params.MARGIN_TO_SELL) / 100);
-	securityMargin = lastBasePrice * ((100 - params.SECURITY_MARGIN) / 100);
-
-	console.log('priceToSell:', priceToSell, ' / securityMargin:', securityMargin);
-}
