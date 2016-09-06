@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "Trading bot to Poloniex exchange",
   "author": "Rafael Costa <rafaelcmrj@gmail.com> (https://github.com/rafaelcmrj)",
-  "contributors": ["Paulo Alexandre <furtuna.alexandre@gmail.com> (https://github.com/gigaPaul)"],
+  "contributors": [
+    "Paulo Alexandre <furtuna.alexandre@gmail.com> (https://github.com/gigaPaul)"
+  ],
   "scripts": {
     "start": "node index.js"
   },
@@ -16,9 +18,7 @@
     "email": "rafaelcmrj@gmail.com"
   },
   "dependencies": {
-    "autobahn": "^0.10.1",
-    "plnx": "0.0.10",
-    "request": "^2.74.0"
+    "plnx": "0.0.10"
   },
   "license": "MIT"
 }
