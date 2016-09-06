@@ -86,7 +86,6 @@ var bot = new Bot();
 
 poloniex.push(function(session) {
 	session.subscribe('ticker', function(data){
-		console.log(config.CURRENCY);
 		if (data[0] == config.CURRENCY) {
 			last = data[1];
 			lowestAsk = data[2];
