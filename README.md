@@ -11,7 +11,7 @@ NodeJS
 5. Abra o terminal de comando (prompt) e execute os seguintes comandos dentro da pasta do projeto:
 ```
 npm install
-node index
+node index BTC_XMR
 ```
 
 ## Requirements
@@ -24,5 +24,5 @@ NodeJS
 4. Open the Terminal (Command Prompt) and run the following code inside project folder:
 ```
 npm install
-node index
+node index BTC_XMR
 ```
