@@ -1,5 +1,5 @@
 {
-  "name": "Poloniex Bot",
+  "name": "bot-poloniex",
   "version": "0.0.1",
   "description": "Trading bot to Poloniex exchange",
   "author": "Rafael Costa <rafaelcmrj@gmail.com> (https://github.com/rafaelcmrj)",
