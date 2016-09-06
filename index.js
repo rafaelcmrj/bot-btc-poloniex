@@ -35,7 +35,7 @@ Bot.prototype.tickerUpdate = function() {
 
 		this.buy();
 
-	} else if (order && last >= priceToSell) {
+	} else if (this.order && last >= this.priceToSell) {
 
 		this.sell();
 
