@@ -36,17 +36,16 @@ poloniex.push(function(session) {
 
 function onTickerUpdate() {
 
-	console.log('ticker update', last, percentChange + '%');
+	//console.log('ticker update', last, percentChange + '%');
 
 	if (order) {
-		console.log('price variation', last * order.price / 100);
+		//console.log('price variation', last * order.price / 100);
 	}
 
 	if (!order && percentChange > 0) {
 		console.log('bought at:', last);
 		order = {
-			price: last,
-			amount: 1000
+			price: last
 		}
 	} else if (order && last > order.price * 1.025) {
 		console.log('sold at:', last);
