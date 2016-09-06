@@ -13,3 +13,16 @@ NodeJS
 npm install
 node index
 ```
+
+## Requirements
+NodeJS
+
+## Configuration
+1. Download and install NodeJS
+2. Clone the [repo](https://github.com/rafaelcmrj/bot-btc-poloniex)
+3. Rename the files config.sample.js and params.sample.js to config.js and params.js, respectively. Edit them to your own preferences
+4. Open the Terminal (Command Prompt) and run the following code inside project folder:
+```
+npm install
+node index
+```
