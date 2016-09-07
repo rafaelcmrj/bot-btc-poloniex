@@ -18,6 +18,7 @@
     "email": "rafaelcmrj@gmail.com"
   },
   "dependencies": {
+    "nodemailer": "^2.6.0",
     "plnx": "0.0.10"
   },
   "license": "MIT"
