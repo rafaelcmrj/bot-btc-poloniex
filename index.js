@@ -71,7 +71,7 @@ Bot.prototype.tickerUpdate = function() {
 			
 			console.log('=== PRICE INFORMATION ===');
 			console.log('base price: ' + this.basePrice);
-			console.log('price target to buy: ' + this.priceToBuy);
+			console.log('price target to buy: ' + this.priceToBuy.toFixed(8));
 			console.log('=========================');
 
 		} else if (!this.order && this.realPriceBuy <= this.priceToBuy && this.realPriceBuy > this.securityMargin) {
@@ -111,7 +111,7 @@ Bot.prototype.buy = function() {
 	console.log('=== ORDER INFORMATION ===');
 	console.log('type: BUY');
 	console.log('price: ' + last);
-	console.log('target to sell: ' + this.priceToSell);
+	console.log('target to sell: ' + this.priceToSell.toFixed(8));
 	console.log('security margin: ' +this.securityMargin);
 	console.log('==========================');
 };
