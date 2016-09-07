@@ -111,7 +111,7 @@ Bot.prototype.buy = function() {
 	console.log('=== ORDER INFORMATION ===');
 	console.log('type: BUY');
 	console.log('price: ' + last);
-	console.log('target to sell: ' + this.priceToSell);
+	console.log('target to sell: ' + this.priceToSell.toFixed(8));
 	console.log('security margin: ' +this.securityMargin);
 	console.log('==========================');
 };
