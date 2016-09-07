@@ -27,13 +27,22 @@ var Bot = function() {
 
 	// BTC Balance only for tests
 	this.balance = params.BTC_BALANCE;
+	this.altcoinBalance = 0;
+
+	// these values are based on order book
+	this.realPriceBuy = null;
+	this.realPriceSell = 0;
 
 	console.log('=== BOT STARTED ===');
-	console.log('current balance: ' + this.balance + 'BTC');
+	console.log('current balance: ' + this.balance + ' BTC');
 	console.log('===================');
 
 	this.setCurrencyPair();
 
+	setInterval(function() {
+		bot.dailyTasks();
+	}, 86400 * 1000);
+	this.dailyTasks();
 };
 
 Bot.prototype.setCurrencyPair = function() {
@@ -65,17 +74,17 @@ Bot.prototype.tickerUpdate = function() {
 			console.log('price target to buy: ' + this.priceToBuy);
 			console.log('=========================');
 
-		} else if (!this.order && last <= this.priceToBuy && last > this.securityMargin) {
+		} else if (!this.order && this.realPriceBuy <= this.priceToBuy && this.realPriceBuy > this.securityMargin) {
 
 			this.buy();
 
-		} else if (this.order && last >= this.priceToSell && !this.reachedPriceToSell) {
+		} else if (this.order && this.realPriceSell >= this.priceToSell && !this.reachedPriceToSell) {
 
 			this.reachedPriceToSell = true;
 
 		} else if (this.reachedPriceToSell) {
 
-			if (this.identifyLatestPricesDirection() < 0 || last <= this.priceToSell) {
+			if (this.identifyLatestPricesDirection() <= 0 || this.differenceFirstLastPrices() <= 0 || this.realPriceSell <= this.priceToSell) {
 
 				this.sell();
 			}
@@ -115,7 +124,7 @@ Bot.prototype.sell = function() {
 	console.log('type: SELL');
 	console.log('price: ' + last);
 	console.log('profit: ' + (last * 100 / this.order.price - 100) + '%');
-	console.log('final balance: ' + this.balance + 'BTC');
+	console.log('final balance: ' + this.balance + ' BTC');
 	console.log('==========================');
 
 	this.order = null;
@@ -130,6 +139,16 @@ Bot.prototype.updateLatestPrices = function() {
 
 	if (this.latestPrices.length > params.MAX_LATEST_PRICES) {
 		this.latestPrices.pop();
+	}
+};
+
+Bot.prototype.differenceFirstLastPrices = function() {
+	if (this.latestPrices[0] > this.latestPrices[this.latestPrices - 1]) {
+		return 1;
+	} else if (this.latestPrices[0] < this.latestPrices[this.latestPrices - 1]) {
+		return -1;
+	} else {
+		return 0;
 	}
 };
 
@@ -150,11 +169,110 @@ Bot.prototype.identifyLatestPricesDirection = function() {
 	}
 
 	return direction;
-}
+};
 
 Bot.prototype.getCurrentTime = function() {
 	return new Date().getTime() / 1000;
-}
+};
+
+Bot.prototype.getRealPriceToBuy = function() {
+	
+	var balance = this.balance;
+
+	poloniex.returnOrderBook({currencyPair: config.CURRENCY}, function(err, data) {
+		if (data) {
+			var asks = data.asks;
+
+			for (ask in asks) {
+				var value = asks[ask][0];
+				var amount = asks[ask][1];
+				
+				balance -= value * amount;
+
+				if (balance < 0) {
+					bot.realPriceBuy = value;
+					bot.tickerUpdate();
+					break;
+				}
+			}
+		}
+	});
+};
+
+Bot.prototype.getRealPriceToSell = function() {
+
+	var altcoinBalance = this.altcoinBalance;
+
+	poloniex.returnOrderBook({currencyPair: config.CURRENCY}, function(err, data) {
+		if (data) {
+			var bids = data.bids;
+
+			for (bid in bids) {
+				var value = bids[bid][0];
+				var amount = bids[bid][1];
+				
+				altcoinBalance -= amount;
+
+				if (altcoinBalance < 0) {
+					bot.realPriceSell = value;
+					bot.tickerUpdate();
+					break;
+				}
+			}
+		}
+	});
+};
+
+Bot.prototype.dailyTasks = function() {
+	this.analyzeBestCurrenciesToTrade();
+};
+
+Bot.prototype.analyzeBestCurrenciesToTrade = function() {
+	poloniex.returnTicker(function(err, data) {
+
+		var recommendedCurrencies = [];
+
+		if (data) {
+			for (var currencyPair in data) {
+
+				// only BTC market now
+				if (currencyPair.substr(0, 4) == 'BTC_') {
+
+					var currencyData = data[currencyPair];
+					var volume = currencyData.baseVolume;
+
+					if (volume > params.MINIMUM_VOLUME_GOOD_CURRENCY) {
+						var variation24h = (100 - (currencyData.high24hr * 100 / currencyData.low24hr)) * -1;
+
+						if (variation24h >= params.MINIMUM_VARIATION_SUGGEST_TRADE) {
+							var distanceLow = currencyData.last - currencyData.low24hr;
+							var distanceHigh = currencyData.high24hr - currencyData.last;
+
+							if (distanceHigh < distanceLow) {
+
+								currencyData.variation24h = variation24h;
+
+								recommendedCurrencies[currencyPair] = currencyData;
+							}
+						}
+					}
+				}
+			}
+
+			console.log('=== RECOMMENDED CURRENCIES TO TRADE TODAY ===');
+			if (recommendedCurrencies) {
+				for (var currencyPair in recommendedCurrencies) {
+					var currency = recommendedCurrencies[currencyPair];
+					console.log(currencyPair, 'VOL', currency.baseVolume, 'VAR 24h', currency.variation24h.toFixed(2) + '%');
+				}
+			} else {
+				console.log('BOT DIDN\'T DETECT A GOOD CURRENCY FOR TRADING');
+			}
+			console.log('=============================================');
+		}
+	});
+};
+
 
 /** Start trading (!!!) */
 var bot = new Bot();
@@ -173,7 +291,12 @@ poloniex.push(function(session) {
 			low24hr = data[9];
 
 			bot.updateLatestPrices();
-			bot.tickerUpdate();
+
+			if (bot.order) {
+				bot.getRealPriceToSell();
+			} else {
+				bot.getRealPriceToBuy();
+			}
 		}
 	});
 });
