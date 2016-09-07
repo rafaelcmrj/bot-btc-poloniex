@@ -2,6 +2,7 @@
  * Importing Modules
  */
 var poloniex = require('plnx');
+var nodemailer = require('nodemailer');
 
 /**
  * Importing file dependencies
