@@ -15,10 +15,21 @@ var last, lowestAsk, highestBid, percentChange, baseVolume, quoteVolume, isFroze
 var Bot = function() {
 
 	this.order = null;
-	this.lastBasePrice = null;
+	this.basePrice = null;
 	this.priceToBuy = null;
 	this.priceToSell = null;
 	this.securityMargin = null;
+	this.reachedPriceToSell = false;
+	this.latestPrices = [];
+	this.waitingGrow = false;
+	this.lastBasePriceUpdate = null;
+
+	// BTC Balance only for tests
+	this.balance = params.BTC_BALANCE;
+
+	console.log('=== BOT STARTED ===');
+	console.log('current balance: ' + this.balance + 'BTC');
+	console.log('===================');
 
 	this.setCurrencyPair();
 
@@ -31,55 +42,116 @@ Bot.prototype.setCurrencyPair = function() {
 };
 
 Bot.prototype.tickerUpdate = function() {
-	if (!this.lastBasePrice) {
-		this.lastBasePrice = last;
-		this.priceToBuy = this.lastBasePrice * ((100 - params.MARGIN_TO_BUY) / 100);
-		this.securityMargin = this.lastBasePrice * ((100 - params.SECURITY_MARGIN) / 100);
-		
-		console.log('lastBasePrice:', this.lastBasePrice, ' / priceToBuy:', this.priceToBuy);
-	}
 
-	if (!this.order && last <= this.priceToBuy && last > this.securityMargin) {
+	if (this.waitingGrow) {
 
-		this.buy();
+		if (this.identifyLatestPricesDirection() > 0) {
 
-	} else if (this.order && last >= this.priceToSell) {
+			this.waitingGrow = false;
+		}
 
-		this.sell();
+	} else {
 
-	} else if (this.order && last <= this.securityMargin) {
+		if (!this.basePrice || (this.lastBasePriceUpdate && this.getCurrentTime() - this.lastBasePriceUpdate > params.TIME_DELAY_PRICE)) {
 
-		console.log('currency decreased a lot. gonna sell for security margin');
+			this.basePrice = last;
+			this.priceToBuy = this.basePrice * ((100 - params.MARGIN_TO_BUY) / 100);
+			this.securityMargin = this.basePrice * ((100 - params.SECURITY_MARGIN) / 100);
+			this.lastBasePriceUpdate = this.getCurrentTime();
+			
+			console.log('=== PRICE INFORMATION ===');
+			console.log('base price: ' + this.basePrice);
+			console.log('price target to buy: ' + this.priceToBuy);
+			console.log('=========================');
 
-		this.sell();
+		} else if (!this.order && last <= this.priceToBuy && last > this.securityMargin) {
+
+			this.buy();
+
+		} else if (this.order && last >= this.priceToSell && !this.reachedPriceToSell) {
+
+			this.reachedPriceToSell = true;
+
+		} else if (this.reachedPriceToSell) {
+
+			if (this.identifyLatestPricesDirection() < 0 || last <= this.priceToSell) {
+
+				this.sell();
+			}
+
+		} else if (this.order && last <= this.securityMargin) {
+
+			console.log('=== SECURITY MARGIN REACHED ===');
+			console.log('Currency decreased to the security level you have defined. Bot will sell all your coins and wait until currency recover its value');
+			console.log('===============================');
+
+			this.waitingGrow = true;
+			this.sell();
+
+		}
 	}
 };
 
 Bot.prototype.buy = function() {
-	console.log('bought at:', last);
-
+	
 	this.order = { price: last };
 	this.priceToSell = this.order.price * ((100 + params.MARGIN_TO_SELL) / 100);
-	this.securityMargin = this.lastBasePrice * ((100 - params.SECURITY_MARGIN) / 100);
+	this.securityMargin = this.basePrice * ((100 - params.SECURITY_MARGIN) / 100);
 
-	console.log('priceToSell:', this.priceToSell, ' / securityMargin:', this.securityMargin);
+	console.log('=== ORDER INFORMATION ===');
+	console.log('type: BUY');
+	console.log('price: ' + last);
+	console.log('target to sell: ' + this.priceToSell);
+	console.log('security margin: ' +this.securityMargin);
+	console.log('==========================');
 };
 
 Bot.prototype.sell = function() {
 
-	console.log('sold at:', last);
-
-	console.log('*** LAST ORDER ***');
-	console.log('BOUGHT AT:', this.order.price);
-	console.log('SOLD AT:', last);
-	console.log('PROFIT:', (last * 100 / this.order.price - 100) + '%');
-	console.log('*** END SUMMARY ***');
+	console.log('=== ORDER INFORMATION ===');
+	console.log('type: SELL');
+	console.log('price: ' + last);
+	console.log('profit: ' + (last * 100 / this.order.price - 100) + '%');
+	console.log('final balance: ' + (this.balance / this.order.price * last) + 'BTC');
+	console.log('==========================');
 
 	this.order = null;
-	this.lastBasePrice = null;
+	this.basePrice = null;
 	this.priceToBuy = null;
 	this.priceToSell = null;
+	this.reachedPriceToSell = false;
 };
+
+Bot.prototype.updateLatestPrices = function() {
+	this.latestPrices.unshift(last);
+
+	if (this.latestPrices.length > params.MAX_LATEST_PRICES) {
+		this.latestPrices.pop();
+	}
+};
+
+Bot.prototype.identifyLatestPricesDirection = function() {
+	
+	// return positive or negative (> 0 = growing, < 0 = falling)
+	var direction = 0;
+
+	for (var i = 0; i < this.latestPrices.length - 1; i++) {
+		var price = this.latestPrices[i];
+		var previousPrice = this.latestPrices[i+1];
+
+		if (price > previousPrice) {
+			direction++;
+		} else if (price < previousPrice) {
+			direction--;
+		}
+	}
+
+	return direction;
+}
+
+Bot.prototype.getCurrentTime = function() {
+	return new Date().getTime() / 1000;
+}
 
 /** Start trading (!!!) */
 var bot = new Bot();
@@ -97,6 +169,7 @@ poloniex.push(function(session) {
 			high24hr = data[8];
 			low24hr = data[9];
 
+			bot.updateLatestPrices();
 			bot.tickerUpdate();
 		}
 	});
