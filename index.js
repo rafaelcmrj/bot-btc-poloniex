@@ -109,11 +109,13 @@ Bot.prototype.buy = function() {
 
 Bot.prototype.sell = function() {
 
+	this.balance = this.balance / this.order.price * last;
+
 	console.log('=== ORDER INFORMATION ===');
 	console.log('type: SELL');
 	console.log('price: ' + last);
 	console.log('profit: ' + (last * 100 / this.order.price - 100) + '%');
-	console.log('final balance: ' + (this.balance / this.order.price * last) + 'BTC');
+	console.log('final balance: ' + this.balance + 'BTC');
 	console.log('==========================');
 
 	this.order = null;
