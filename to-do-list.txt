@@ -1,0 +1,6 @@
+1. Alertar ordens por email
+2. Resetar lastBasePrice se ficar congelado por muito tempo
+3. Passar moeda via parâmetro de inicialização - DONE
+4. Analisar quais moedas tiveram oscilação no dia anterior e sugerir para trading, levando em conta que o bot lucra na oscilação
+5. Determinar o ponto de venda e compra de acordo com as ordens do book
+6. Analisar subidas para que o bot não venda até que haja uma queda (se já tiver passado do mínimo para venda)
