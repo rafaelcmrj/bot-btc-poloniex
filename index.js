@@ -30,6 +30,7 @@ var Bot = function() {
 	this.hasOpenedOrders = false;
 
 	this.balance = 0;
+	this.altcoinBalance = 0;
 
 	this.loadBalance();
 };
@@ -269,10 +270,33 @@ Bot.prototype.verifyOpenOrders = function() {
 			if (!err && data) {
 
 				if (data.length == 0) {
-					
-					bot.hasOpenedOrders = false;
-					bot.canBuy = true;
+
+					var currencyPair = config.CURRENCY.split('_');
+					var currencyB = currencyPair[1];
+
+					poloniex.returnCompleteBalances({key: config.KEY, secret: config.SECRET}, function(err, data) {
+
+						if (!err && data) {
+
+							this.altcoinBalance = data[currencyB].available;
+
+							bot.hasOpenedOrders = false;
+							bot.canBuy = true;
+
+						} else {
+							console.log('*** POLONIEX CALLBACK ***');
+							console.log(err);
+							console.log('*************************');
+							console.log('');
+						}
+
+					});
 				}
+			} else {
+				console.log('*** POLONIEX CALLBACK ***');
+				console.log(err);
+				console.log('*************************');
+				console.log('');
 			}
 		});
 	}
@@ -343,7 +367,7 @@ Bot.prototype.sell = function() {
 		poloniex.sell({
 			currencyPair: config.CURRENCY,
 			rate: last,
-			amount: this.order.amount,
+			amount: this.altcoinBalance,
 			key: config.KEY,
 			secret: config.SECRET
 		}, function(err, data) {
