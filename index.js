@@ -46,12 +46,14 @@ Bot.prototype.loadBalance = function() {
 			console.log('');
 		} else {
 
-			var availableBalance = Number(data.BTC.available);
-			var onOrderBalance = Number(data.BTC.onOrders);
+			console.log(data.BTC);
+
+			var availableBalance = Number(data.BTC.available).toFixed(8);
+			var onOrderBalance = Number(data.BTC.onOrders).toFixed(8);
 
 			if (availableBalance || onOrderBalance) {
 
-				if (onOrderBalance) {
+				if (onOrderBalance > 0) {
 
 					console.log('=== ERROR ===');
 					console.log('You already have orders, please remove these orders to start trading.');
@@ -364,8 +366,11 @@ Bot.prototype.sell = function() {
 
 		this.waitingOrderCallback = true;
 
+		var currencies = config.CURRENCY.split('_');
+		var currencyPair = currencies[1] + '_' + currencies[0];
+
 		poloniex.sell({
-			currencyPair: config.CURRENCY,
+			currencyPair: currencyPair,
 			rate: last,
 			amount: this.altcoinBalance,
 			key: config.KEY,
