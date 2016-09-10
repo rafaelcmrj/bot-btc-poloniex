@@ -46,8 +46,6 @@ Bot.prototype.loadBalance = function() {
 			console.log('');
 		} else {
 
-			console.log(data.BTC);
-
 			var availableBalance = Number(data.BTC.available).toFixed(8);
 			var onOrderBalance = Number(data.BTC.onOrders).toFixed(8);
 
@@ -280,13 +278,14 @@ Bot.prototype.verifyOpenOrders = function() {
 
 						if (!err && data) {
 
-							this.altcoinBalance = data[currencyB].available;
+							bot.altcoinBalance = data[currencyB].available;
+							bot.balance = data.BTC.available;
 
 							bot.hasOpenedOrders = false;
 							bot.canBuy = true;
 
 						} else {
-							console.log('*** POLONIEX CALLBACK ***');
+							console.log('*** POLONIEX CALLBACK | returnCompleteBalances ***');
 							console.log(err);
 							console.log('*************************');
 							console.log('');
@@ -295,7 +294,7 @@ Bot.prototype.verifyOpenOrders = function() {
 					});
 				}
 			} else {
-				console.log('*** POLONIEX CALLBACK ***');
+				console.log('*** POLONIEX CALLBACK | returnOpenOrders ***');
 				console.log(err);
 				console.log('*************************');
 				console.log('');
@@ -315,8 +314,8 @@ Bot.prototype.buy = function() {
 
 		poloniex.buy({
 			currencyPair: config.CURRENCY,
-			rate: last,
-			amount: this.balance / last,
+			rate: rate,
+			amount: amount,
 			key: config.KEY,
 			secret: config.SECRET
 		}, function(err, data) {
@@ -325,7 +324,7 @@ Bot.prototype.buy = function() {
 
 			if (!err && data) {
 
-				console.log('*** POLONIEX CALLBACK ***');
+				console.log('*** POLONIEX CALLBACK | buy ***');
 				console.log(data);
 				console.log('*************************');
 				console.log('');
@@ -351,7 +350,7 @@ Bot.prototype.buy = function() {
 				console.log('==========================');
 				console.log('');
 			} else {
-				console.log('*** POLONIEX CALLBACK ***');
+				console.log('*** POLONIEX CALLBACK | buy ***');
 				console.log(err);
 				console.log('*************************');
 				console.log('');
@@ -366,11 +365,8 @@ Bot.prototype.sell = function() {
 
 		this.waitingOrderCallback = true;
 
-		var currencies = config.CURRENCY.split('_');
-		var currencyPair = currencies[1] + '_' + currencies[0];
-
 		poloniex.sell({
-			currencyPair: currencyPair,
+			currencyPair: config.CURRENCY,
 			rate: last,
 			amount: this.altcoinBalance,
 			key: config.KEY,
@@ -381,7 +377,7 @@ Bot.prototype.sell = function() {
 
 			if (!err && data) {
 				
-				console.log('*** POLONIEX CALLBACK ***');
+				console.log('*** POLONIEX CALLBACK | sell ***');
 				console.log(data);
 				console.log('*************************');
 				console.log('');
@@ -390,7 +386,6 @@ Bot.prototype.sell = function() {
 				console.log('type: SELL');
 				console.log('price: ' + last);
 				console.log('profit: ' + (last * 100 / bot.order.rate - 100).toFixed(2) + '%');
-				console.log('final balance: ' + bot.balance + ' BTC');
 				console.log('==========================');
 				console.log('');
 
@@ -402,7 +397,7 @@ Bot.prototype.sell = function() {
 				bot.priceToSell = null;
 				bot.reachedPriceToSell = false;
 			} else {
-				console.log('*** POLONIEX CALLBACK ***');
+				console.log('*** POLONIEX CALLBACK | sell ***');
 				console.log(err);
 				console.log('*************************');
 				console.log('');
