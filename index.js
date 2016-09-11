@@ -40,10 +40,7 @@ Bot.prototype.loadBalance = function() {
 	poloniex.returnCompleteBalances({key: config.KEY, secret: config.SECRET}, function(err, data) {
 		if (err) {
 
-			console.log('=== ERROR ===');
-			console.log('There was an error to retrieve your balance. Verify your API Key and try again.');
-			console.log('=============');
-			console.log('');
+			bot.log('=== ERROR ===', 'There was an error to retrieve your balance. Verify your API Key and try again.');
 		} else {
 
 			var availableBalance = Number(data.BTC.available).toFixed(8);
@@ -53,10 +50,7 @@ Bot.prototype.loadBalance = function() {
 
 				if (onOrderBalance > 0) {
 
-					console.log('=== ERROR ===');
-					console.log('You already have orders, please remove these orders to start trading.');
-					console.log('=============');
-					console.log('');
+					bot.log('=== ERROR ===', 'You already have orders, please remove these orders to start trading.');
 				} else {
 
 					bot.balance = availableBalance;
@@ -66,10 +60,7 @@ Bot.prototype.loadBalance = function() {
 
 			} else {
 
-				console.log('=== ERROR ===');
-				console.log('You don\'t have enough BTC balance.');
-				console.log('=============');
-				console.log('');
+				bot.log('=== ERROR ===', 'You don\'t have enough BTC balance.');
 			}
 		}
 	});
@@ -77,11 +68,8 @@ Bot.prototype.loadBalance = function() {
 
 Bot.prototype.startBot = function() {
 	
-	console.log('=== BOT STARTED ===');
-	console.log('current balance: ' + this.balance + ' BTC');
-	console.log('===================');
-	console.log('');
-	
+	bot.log('=== BOT STARTED ===', 'current balance: ' + this.balance + ' BTC');
+
 	this.setCurrencyPair();
 	this.initTasks();
 	this.subscribeToTicker();
@@ -145,20 +133,21 @@ Bot.prototype.analyzeBestCurrenciesToTrade = function() {
 				}
 			}
 
-			console.log('=== RECOMMENDED CURRENCIES TO TRADE TODAY ===');
+			
+			var message = '';
 
 			if (recommendedCurrencies) {
 
 				for (var currencyPair in recommendedCurrencies) {
 
 					var currency = recommendedCurrencies[currencyPair];
-					console.log(currencyPair, 'VOL', currency.baseVolume, 'VAR 24h', currency.variation24h.toFixed(2) + '%');
+					message += currencyPair + ' VOL ' + currency.baseVolume + ' VAR 24h ' + currency.variation24h.toFixed(2) + '%\n';
 				}
 			} else {
-				console.log('BOT DIDN\'T DETECT A GOOD CURRENCY FOR TRADING');
+				message = 'BOT DIDN\'T DETECT A GOOD CURRENCY FOR TRADING';
 			}
-			console.log('=============================================');
-			console.log('');
+
+			bot.log('=== RECOMMENDED CURRENCIES TO TRADE TODAY ===', message, true);
 		}
 	});
 };
@@ -221,11 +210,9 @@ Bot.prototype.tickerUpdate = function() {
 				this.securityMargin = (this.basePrice * ((100 - params.SECURITY_MARGIN) / 100)).toFixed(8);
 				this.lastBasePriceUpdate = this.getCurrentTime();
 				
-				console.log('=== PRICE INFORMATION ===');
-				console.log('base price: ' + this.basePrice);
-				console.log('price target to buy: ' + this.priceToBuy);
-				console.log('=========================');
-				console.log('');
+				var message = 'base price: ' + this.basePrice + '\nprice target to buy: ' + this.priceToBuy;
+
+				bot.log('=== PRICE INFORMATION ===', message);
 
 			} else if (!this.order && last <= this.priceToBuy && last > this.securityMargin && this.canBuy) {
 
@@ -244,10 +231,7 @@ Bot.prototype.tickerUpdate = function() {
 
 			} else if (this.order && last <= this.securityMargin) {
 
-				console.log('=== SECURITY MARGIN REACHED ===');
-				console.log('Currency decreased to the security level you have defined. Bot will sell all your coins and wait until currency recover its value');
-				console.log('===============================');
-				console.log('');
+				bot.log('=== SECURITY MARGIN REACHED ===', 'Currency decreased to the security level you have defined. Bot will sell all your coins and wait until currency recover its value');
 
 				this.waitingGrow = true;
 
@@ -285,19 +269,13 @@ Bot.prototype.verifyOpenOrders = function() {
 							bot.canBuy = true;
 
 						} else {
-							console.log('*** POLONIEX CALLBACK | returnCompleteBalances ***');
-							console.log(err);
-							console.log('*************************');
-							console.log('');
+							//bot.log('*** POLONIEX CALLBACK | returnCompleteBalances ***', err);
 						}
 
 					});
 				}
 			} else {
-				console.log('*** POLONIEX CALLBACK | returnOpenOrders ***');
-				console.log(err);
-				console.log('*************************');
-				console.log('');
+				//bot.log('*** POLONIEX CALLBACK | returnOpenOrders ***', err);
 			}
 		});
 	}
@@ -324,10 +302,7 @@ Bot.prototype.buy = function() {
 
 			if (!err && data) {
 
-				console.log('*** POLONIEX CALLBACK | buy ***');
-				console.log(data);
-				console.log('*************************');
-				console.log('');
+				bot.log('*** POLONIEX CALLBACK | buy ***', data);
 				
 				bot.canBuy = false;
 
@@ -342,18 +317,11 @@ Bot.prototype.buy = function() {
 				bot.priceToSell = (bot.order.rate * ((100 + params.MARGIN_TO_SELL) / 100)).toFixed(8);
 				bot.securityMargin = (bot.basePrice * ((100 - params.SECURITY_MARGIN) / 100)).toFixed(8);
 
-				console.log('=== ORDER INFORMATION ===');
-				console.log('type: BUY');
-				console.log('price: ' + bot.order.rate);
-				console.log('target to sell: ' + bot.priceToSell);
-				console.log('security margin: ' + bot.securityMargin);
-				console.log('==========================');
-				console.log('');
+				var message = 'type: BUY\n' +  'price: ' + bot.order.rate + '\ntarget to sell: ' + bot.priceToSell + '\nsecurity margin: ' + bot.securityMargin;
+
+				bot.log('=== ORDER INFORMATION ===', message, true);
 			} else {
-				console.log('*** POLONIEX CALLBACK | buy ***');
-				console.log(err);
-				console.log('*************************');
-				console.log('');
+				bot.log('*** POLONIEX CALLBACK | buy ***', err);
 			}
 		});
 	}
@@ -377,17 +345,10 @@ Bot.prototype.sell = function() {
 
 			if (!err && data) {
 				
-				console.log('*** POLONIEX CALLBACK | sell ***');
-				console.log(data);
-				console.log('*************************');
-				console.log('');
+				bot.log('*** POLONIEX CALLBACK | sell ***', data);
 
-				console.log('=== ORDER INFORMATION ===');
-				console.log('type: SELL');
-				console.log('price: ' + last);
-				console.log('profit: ' + (last * 100 / bot.order.rate - 100).toFixed(2) + '%');
-				console.log('==========================');
-				console.log('');
+				var message = 'type: SELL\n' + 'price: ' + last + '\nprofit: ' + (last * 100 / bot.order.rate - 100).toFixed(2) + '%'
+				bot.log('=== ORDER INFORMATION ===', message, true);
 
 				bot.hasOpenedOrders = true;
 
@@ -397,10 +358,7 @@ Bot.prototype.sell = function() {
 				bot.priceToSell = null;
 				bot.reachedPriceToSell = false;
 			} else {
-				console.log('*** POLONIEX CALLBACK | sell ***');
-				console.log(err);
-				console.log('*************************');
-				console.log('');
+				bot.log('*** POLONIEX CALLBACK | sell ***', err);
 			}
 		});
 	}
@@ -440,6 +398,32 @@ Bot.prototype.identifyLatestPricesDirection = function() {
 Bot.prototype.getCurrentTime = function() {
 
 	return new Date().getTime() / 1000;
+};
+
+Bot.prototype.log = function(subject, message, sendEmail) {
+
+	console.log(subject);
+	console.log(message);
+	console.log('');
+
+	if (sendEmail && config.SMTP) {
+		var transporter = nodemailer.createTransport(config.SMTP_PROTOCOL + '://' + config.SMTP_EMAIL + ':' + config.SMTP_PASSWORD + '@' + config.SMTP_HOST);
+ 
+		// setup e-mail data with unicode symbols 
+		var mailOptions = {
+			from: config.SMTP_EMAIL, // sender address 
+			to: config.SMTP_EMAIL, // list of receivers 
+			subject: subject, // Subject line 
+			text: message // plaintext body 
+		};
+		
+		// send mail with defined transport object 
+		transporter.sendMail(mailOptions, function(error, info){
+
+			if(error) return console.log(error);
+		});
+	}
+
 };
 
 
