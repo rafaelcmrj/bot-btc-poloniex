@@ -20,7 +20,6 @@ var Bot = function() {
 	this.priceToBuy = null;
 	this.priceToSell = null;
 	this.securityMargin = null;
-	this.reachedPriceToSell = false;
 	this.latestPrices = [];
 	this.waitingGrow = false;
 	this.lastBasePriceUpdate = null;
@@ -212,22 +211,15 @@ Bot.prototype.tickerUpdate = function() {
 				
 				var message = 'base price: ' + this.basePrice + '\nprice target to buy: ' + this.priceToBuy;
 
-				bot.log('=== PRICE INFORMATION ===', message);
+				bot.log('=== PRICE INFORMATION UPDATE ===', message);
 
 			} else if (!this.order && last <= this.priceToBuy && last > this.securityMargin && this.canBuy) {
 
 				this.buy();
 
-			} else if (this.order && last >= this.priceToSell && !this.reachedPriceToSell) {
+			} else if (this.order && last >= this.priceToSell) {
 
-				this.reachedPriceToSell = true;
-
-			} else if (this.reachedPriceToSell) {
-
-				if (this.identifyLatestPricesDirection() <= 0 || this.differenceFirstLastPrices() <= 0 || last <= this.priceToSell) {
-
-					this.sell();
-				}
+				this.sell();
 
 			} else if (this.order && last <= this.securityMargin) {
 
@@ -356,7 +348,6 @@ Bot.prototype.sell = function() {
 				bot.basePrice = null;
 				bot.priceToBuy = null;
 				bot.priceToSell = null;
-				bot.reachedPriceToSell = false;
 			} else {
 				bot.log('*** POLONIEX CALLBACK | sell ***', err);
 			}
