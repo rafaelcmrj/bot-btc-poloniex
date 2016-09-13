@@ -14,7 +14,8 @@ npm install
 node index BTC_XMR
 ```
 
-# Caso queira contribuir: BTC Address: 1PZxRkZu7B36RXd7sNMLwQRbqyAwCD9KoG
+## Endereço para contribuição
+BTC 1PZxRkZu7B36RXd7sNMLwQRbqyAwCD9KoG
 
 ## Requirements
 NodeJS
@@ -29,4 +30,5 @@ npm install
 node index BTC_XMR
 ```
 
-# If you wanna donate: BTC Address: 1PZxRkZu7B36RXd7sNMLwQRbqyAwCD9KoG
+## Donate address
+BTC 1PZxRkZu7B36RXd7sNMLwQRbqyAwCD9KoG
