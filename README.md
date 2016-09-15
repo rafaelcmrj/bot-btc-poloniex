@@ -53,3 +53,4 @@ LTC LL8pZB2DcXyds9Mhpjf9a5dJCDdzdMrWSa
  
 XMR c39e1e7848d99b2cf43bf258276b2407b79b560ad3c0b516ae060e7db97ebd08
   
+# trading-bot
